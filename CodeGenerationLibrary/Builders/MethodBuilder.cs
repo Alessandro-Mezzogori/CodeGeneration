@@ -91,6 +91,16 @@ public class MethodBuilder : ISyntaxBuilder<MethodDeclarationSyntax>
     }
     public MethodBuilder SetReturnType(Type returnType)
     {
+        // TODO bug with void
+        // TODO the compilation unit and namespace in which you are in should set if fullname or name
+        /*
+         * TODO Proposal:
+         *      Dictionary<Type, string> containing for each type the name that should be used by default
+         *      the options could be set in the compilatino unit wrapper 
+         *      the dictionary changes when a using directive is added or removed
+         *      
+         *      each namespace should have it's own override of the dictionary for the type contained in the namespace
+         */
         _returnType = SyntaxFactory.ParseTypeName(returnType.FullName ?? returnType.Name);
         return this;
     }
