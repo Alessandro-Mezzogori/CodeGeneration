@@ -4,17 +4,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeGeneration.Builders;
 
-public class BodyBuilder : ISyntaxBuilder<BlockSyntax>
+public class BodyBuilder : SyntaxBuilder<BlockSyntax>
 {
-    private SyntaxToken _openBraceToken;
     private SyntaxList<StatementSyntax> _statements;
-    private SyntaxToken _closeBraceToken;
 
-    public BodyBuilder(ICommonTokenBuilder commonTokenBuilder)
+    public BodyBuilder()
     {
-        _openBraceToken = commonTokenBuilder.OpenBraceToken();
-        _closeBraceToken = commonTokenBuilder.CloseBraceToken();
-
         _statements = SyntaxFactory.List<StatementSyntax>();
     }
 
@@ -31,13 +26,20 @@ public class BodyBuilder : ISyntaxBuilder<BlockSyntax>
         return this;
     }
 
-    public BlockSyntax Build()
+    public override BlockSyntax Build()
     {
-        return SyntaxFactory.Block(_openBraceToken, _statements, _closeBraceToken);
+        SyntaxToken openBraceToken = CommonTokenBuilder.OpenBraceToken();
+        SyntaxToken closeBraceToken = CommonTokenBuilder.CloseBraceToken();
+
+        return SyntaxFactory.Block(
+            openBraceToken, 
+            _statements, 
+            closeBraceToken
+        );
     }
 
-    public static BodyBuilder Empty(ICommonTokenBuilder commonTokenBuilder)
+    public static BodyBuilder Empty()
     {
-        return new BodyBuilder(commonTokenBuilder);
+        return new BodyBuilder();
     }
 }

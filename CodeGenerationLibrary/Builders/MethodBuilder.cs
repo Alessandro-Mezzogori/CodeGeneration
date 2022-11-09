@@ -85,27 +85,13 @@ public class MethodBuilder : ISyntaxBuilder<MethodDeclarationSyntax>
         return this;
     }
 
-    public MethodBuilder SetReturnType<TType>()
+    public MethodBuilder SetReturnType(ISyntaxBuilder<TypeSyntax> builder)
     {
-        return SetReturnType(typeof(TType));
-    }
-    public MethodBuilder SetReturnType(Type returnType)
-    {
-        // TODO bug with void
-        // TODO the compilation unit and namespace in which you are in should set if fullname or name
-        /*
-         * TODO Proposal:
-         *      Dictionary<Type, string> containing for each type the name that should be used by default
-         *      the options could be set in the compilatino unit wrapper 
-         *      the dictionary changes when a using directive is added or removed
-         *      
-         *      each namespace should have it's own override of the dictionary for the type contained in the namespace
-         */
-        _returnType = SyntaxFactory.ParseTypeName(returnType.FullName ?? returnType.Name);
+        _returnType = builder.Build();
         return this;
     }
 
-    public MethodBuilder AddMethodParameter(ParameterBuilder parameterBuilder)
+    public MethodBuilder AddMethodParameter(ISyntaxBuilder<ParameterSyntax> parameterBuilder)
     {
         _parameterList = _parameterList.AddParameters(parameterBuilder.Build());
         return this;
@@ -125,9 +111,11 @@ public class MethodBuilder : ISyntaxBuilder<MethodDeclarationSyntax>
     /// </summary>
     /// <param name="builder">specification of the body</param>
     /// <returns>this instance for chaining</returns>
-    public MethodBuilder SetBody(BodyBuilder? builder = null)
+    public MethodBuilder SetBody<TBuilder>(Action<TBuilder> builderAction)
+        where TBuilder : SyntaxBuilder<BlockSyntax>, new()
     {
-        builder ??= BodyBuilder.Empty(_commonTokenBuilder);
+        TBuilder builder = SyntaxBuilder<BlockSyntax>.Create<TBuilder>(_commonTokenBuilder);
+        builderAction.Invoke(builder);
 
         _body = builder.Build();
         return this;
